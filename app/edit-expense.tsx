@@ -36,10 +36,11 @@ export default function EditExpenseScreen() {
     const [note, setNote] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // ─── Load Existing Data ──────────────────────────────────────────────────
     useEffect(() => {
-        if (!id) return;
+        if (!id || isDeleting) return;
 
         const expense = expenses.find(e => e.id === id);
         if (expense) {
@@ -52,7 +53,7 @@ export default function EditExpenseScreen() {
                 { text: 'Go Back', onPress: () => router.back() }
             ]);
         }
-    }, [id, expenses, router]);
+    }, [id, expenses, router, isDeleting]);
 
     // ─── Submit handler ──────────────────────────────────────────────────────
     const handleSubmit = useCallback(async () => {
@@ -91,10 +92,12 @@ export default function EditExpenseScreen() {
                     text: 'Delete',
                     style: 'destructive',
                     onPress: async () => {
+                        setIsDeleting(true);
                         try {
                             await deleteExpense(id);
                             router.back();
                         } catch (error: any) {
+                            setIsDeleting(false);
                             Alert.alert('Error', 'Failed to delete expense.');
                         }
                     },
