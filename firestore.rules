@@ -1,0 +1,30 @@
+/**
+ * Firestore Security Rules for Expense Care.
+ *
+ * Enforces per-user data isolation:
+ * - Users can only read/write their own data
+ * - All operations require authentication
+ * - Sub-collections (budgets, expenses) inherit user-level access
+ *
+ * Deploy with: firebase deploy --only firestore:rules
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User profiles — only accessible by the owning user
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Budgets sub-collection
+      match /budgets/{budgetId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Expenses sub-collection
+      match /expenses/{expenseId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

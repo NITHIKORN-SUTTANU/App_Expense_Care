@@ -1,59 +1,108 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+/**
+ * Root layout — app entry point.
+ *
+ * Wraps the entire app with providers (Auth, navigation)
+ * and handles the auth gate (redirect to login if not signed in).
+ */
+
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { BudgetProvider } from '../src/context/BudgetContext';
 
-import { useColorScheme } from '@/components/useColorScheme';
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
-
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+/**
+ * Navigation guard component.
+ *
+ * Redirects unauthenticated users to the login screen
+ * and authenticated users away from auth screens.
+ */
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { user, isLoading, isAuthenticated } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+
+    if (isLoading) return; // Wait until auth state is determined
+
+    const isOnAuthScreen = segments[0] === 'login' || segments[0] === 'register';
+
+    const isRoot = !segments[0];
+
+    if (!isAuthenticated && !isOnAuthScreen) {
+
+      router.replace('/login');
+    } else if (isAuthenticated && (isOnAuthScreen || isRoot)) {
+
+      router.replace('/(tabs)');
     }
-  }, [loaded]);
+  }, [isAuthenticated, isLoading, segments]);
 
-  if (!loaded) {
-    return null;
+  if (isLoading) {
+    return null; // Or a splash screen
   }
 
-  return <RootLayoutNav />;
+  return <>{children}</>;
+
 }
 
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
+/**
+ * Root layout component.
+ *
+ * Sets up the navigation stack and wraps everything with providers.
+ */
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <GestureHandlerRootView style={styles.container}>
+      <AuthProvider>
+        <BudgetProvider>
+          <AuthGate>
+            <StatusBar style="light" />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="login" />
+              <Stack.Screen name="register" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen
+                name="add-expense"
+                options={{
+                  presentation: 'modal',
+                  headerShown: false,
+                  animation: 'slide_from_bottom',
+                }}
+              />
+              <Stack.Screen
+                name="budget-setup"
+                options={{
+                  presentation: 'modal',
+                  headerShown: true,
+                  headerTitle: 'Set Up Budget',
+                  headerStyle: { backgroundColor: '#0F172A' },
+                  headerTintColor: '#FFF',
+                }}
+              />
+              <Stack.Screen
+                name="edit-expense"
+                options={{
+                  presentation: 'modal',
+                  headerShown: false,
+                  animation: 'slide_from_bottom',
+                }}
+              />
+            </Stack>
+          </AuthGate>
+        </BudgetProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+  },
+});
