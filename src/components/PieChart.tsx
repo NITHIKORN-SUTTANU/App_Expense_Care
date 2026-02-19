@@ -2,9 +2,10 @@ import * as d3 from 'd3-shape';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
+    SharedValue,
     useAnimatedProps,
     useSharedValue,
-    withTiming,
+    withTiming
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { categoryColors, fontSize, fontWeight, palette } from '../constants/colors';
@@ -73,7 +74,7 @@ export function PieChart({
                                 .innerRadius(innerRadius)
                                 .outerRadius(radius)
                                 .startAngle(0)
-                                .endAngle(2 * Math.PI)() || ''
+                                .endAngle(2 * Math.PI)({} as any) || ''
                         }
                         fill={palette.gray700}
                         opacity={0.2}
@@ -138,7 +139,7 @@ function PieSlice({
 }: {
     d: string;
     color: string;
-    progress: Animated.SharedValue<number>;
+    progress: SharedValue<number>;
     index: number;
 }) {
     const animatedProps = useAnimatedProps(() => {
