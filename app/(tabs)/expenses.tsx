@@ -7,6 +7,7 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
     Alert,
@@ -19,7 +20,7 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CustomDatePicker } from '../../src/components/CustomDatePicker';
+import { CustomDateRangePicker, DateRange } from '../../src/components/CustomDateRangePicker';
 import { EmptyState } from '../../src/components/EmptyState';
 import { ExpenseCard } from '../../src/components/ExpenseCard';
 import { SwipeableRow } from '../../src/components/SwipeableRow';
@@ -28,14 +29,12 @@ import { borderRadius, fontSize, fontWeight, shadows, spacing } from '../../src/
 import { useBudgetContext } from '../../src/context/BudgetContext';
 import { useThemeColors } from '../../src/hooks/useThemeColors';
 import { CategoryKey, Expense } from '../../src/types';
-import { formatDisplayDate } from '../../src/utils/dateHelpers';
+import { endOfDay, startOfDay } from '../../src/utils/dateHelpers';
 
 interface DateSection {
     title: string;
     data: Expense[];
 }
-
-import { useRouter } from 'expo-router';
 
 export default function ExpensesScreen() {
     const router = useRouter();
@@ -43,7 +42,8 @@ export default function ExpensesScreen() {
     const insets = useSafeAreaInsets();
     const { budget, expenses, deleteExpense } = useBudgetContext();
 
-    const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+    // Default DateRange to today only
+    const [dateRange, setDateRange] = useState<DateRange | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<CategoryKey | 'all'>('all');
     const [showCategoryPicker, setShowCategoryPicker] = useState(false);
@@ -51,13 +51,15 @@ export default function ExpensesScreen() {
     const filteredExpenses = useMemo(() => {
         let result = expenses;
 
-        // Filter by Date (if selected)
-        if (selectedDate) {
-            result = result.filter(expense =>
-                expense.date.getDate() === selectedDate.getDate() &&
-                expense.date.getMonth() === selectedDate.getMonth() &&
-                expense.date.getFullYear() === selectedDate.getFullYear()
-            );
+        // Filter by Date Range (if selected)
+        if (dateRange) {
+            const rangeStart = startOfDay(dateRange.start).getTime();
+            const rangeEnd = endOfDay(dateRange.end).getTime();
+
+            result = result.filter(expense => {
+                const expenseTime = expense.date.getTime();
+                return expenseTime >= rangeStart && expenseTime <= rangeEnd;
+            });
         }
 
         // Filter by Category
@@ -67,7 +69,7 @@ export default function ExpensesScreen() {
 
         // Sort by Date Descending (Newest first)
         return result.sort((a, b) => b.date.getTime() - a.date.getTime());
-    }, [expenses, selectedDate, selectedCategory]);
+    }, [expenses, dateRange, selectedCategory]);
 
     const sections = useMemo<DateSection[]>(() => {
         const grouped = new Map<string, Expense[]>();
@@ -86,13 +88,22 @@ export default function ExpensesScreen() {
         });
     }, [filteredExpenses]);
 
-    const handleDateSelect = (date: Date) => {
-        setSelectedDate(date);
+    const handleDateSelect = (range: DateRange) => {
+        setDateRange(range);
         setShowDatePicker(false);
     };
 
+    const periodDateLabel = useMemo(() => {
+        if (!dateRange) return 'All Dates';
 
+        const { start, end } = dateRange;
+        const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+        if (start.getTime() === end.getTime()) {
+            return fmt(start);
+        }
+        return `${fmt(start)} \u2013 ${fmt(end)}`;
+    }, [dateRange]);
 
 
     const handleDelete = useCallback(
@@ -176,35 +187,64 @@ export default function ExpensesScreen() {
                     <View>
                         <Text style={[styles.pageTitle, { color: '#FFF', marginBottom: spacing.md }]}>Expenses</Text>
 
-                        <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm }}>
+                        <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, flexWrap: 'wrap' }}>
                             {/* Category Filter Button */}
                             <TouchableOpacity
                                 onPress={() => setShowCategoryPicker(true)}
-                                style={[styles.filterButton, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}
+                                style={[
+                                    styles.filterButton,
+                                    {
+                                        backgroundColor: selectedCategory === 'all'
+                                            ? 'rgba(255, 255, 255, 0.1)'
+                                            : 'rgba(52, 211, 153, 0.2)',
+                                    },
+                                ]}
                             >
                                 <Ionicons name="filter" size={16} color="#FFF" />
                                 <Text style={[styles.filterButtonText, { color: '#FFF' }]}>
                                     {selectedCategory === 'all' ? 'All' : getCategoryByKey(selectedCategory).label}
                                 </Text>
+                                {selectedCategory !== 'all' && (
+                                    <TouchableOpacity
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedCategory('all');
+                                        }}
+                                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                    >
+                                        <Ionicons name="close-circle" size={16} color="#94A3B8" style={{ marginLeft: 4 }} />
+                                    </TouchableOpacity>
+                                )}
                             </TouchableOpacity>
 
                             {/* Date Filter Button */}
                             <TouchableOpacity
                                 onPress={() => setShowDatePicker(true)}
-                                style={[styles.filterButton, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}
+                                style={[styles.filterButton, { backgroundColor: dateRange ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255, 255, 255, 0.1)' }]}
                             >
                                 <Ionicons name="calendar" size={16} color="#FFF" />
                                 <Text style={[styles.filterButtonText, { color: '#FFF' }]}>
-                                    {selectedDate ? formatDisplayDate(selectedDate) : 'Select Date'}
+                                    {periodDateLabel}
                                 </Text>
+                                {dateRange !== null && (
+                                    <TouchableOpacity
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            setDateRange(null);
+                                        }}
+                                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                    >
+                                        <Ionicons name="close-circle" size={16} color="#94A3B8" style={{ marginLeft: 4 }} />
+                                    </TouchableOpacity>
+                                )}
                             </TouchableOpacity>
                         </View>
 
-                        <CustomDatePicker
+                        <CustomDateRangePicker
                             visible={showDatePicker}
                             onClose={() => setShowDatePicker(false)}
                             onSelect={handleDateSelect}
-                            selectedDate={selectedDate}
+                            initialRange={dateRange ?? { start: new Date(), end: new Date() }}
                         />
 
                         {/* Category Picker Modal */}
@@ -262,8 +302,8 @@ export default function ExpensesScreen() {
                 ListEmptyComponent={
                     <EmptyState
                         icon="receipt-outline"
-                        title="No Expenses Yet"
-                        subtitle="Tap the + button on the Home tab to add your first expense."
+                        title="No Expenses"
+                        subtitle="Adjust your filters or tap + to add your first expense."
                     />
                 }
             />

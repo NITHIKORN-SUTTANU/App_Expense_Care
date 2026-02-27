@@ -95,17 +95,19 @@ export function getAllBudgetStatuses(budget: Budget, expenses: Expense[]): AllBu
 
 /**
  * Get date range boundaries for a given budget period.
+ * @param period - The budget period
+ * @param referenceDate - Optional date to use as reference (defaults to now)
  */
-export function getDateRangeForPeriod(period: BudgetPeriod): { start: Date; end: Date } {
-    const now = new Date();
+export function getDateRangeForPeriod(period: BudgetPeriod, referenceDate?: Date): { start: Date; end: Date } {
+    const ref = referenceDate ?? new Date();
 
     switch (period) {
         case 'daily':
-            return { start: startOfDay(now), end: endOfDay(now) };
+            return { start: startOfDay(ref), end: endOfDay(ref) };
         case 'weekly':
-            return { start: startOfWeek(now), end: endOfWeek(now) };
+            return { start: startOfWeek(ref), end: endOfWeek(ref) };
         case 'monthly':
-            return { start: startOfMonth(now), end: endOfMonth(now) };
+            return { start: startOfMonth(ref), end: endOfMonth(ref) };
     }
 }
 
@@ -115,12 +117,12 @@ export function getDateRangeForPeriod(period: BudgetPeriod): { start: Date; end:
  * Used by the Summary screen to render pie charts and ranked lists.
  *
  * @param expenses - All user expenses (will be filtered by period)
- * @param period - Time period to summarize
+ * @param startDate - The beginning of the date range
+ * @param endDate - The end of the date range
  * @returns Total spent and per-category breakdown sorted by amount (desc)
  */
-export function getCategorySummary(expenses: Expense[], period: BudgetPeriod): PeriodSummary {
-    const { start, end } = getDateRangeForPeriod(period);
-    const filtered = filterExpensesByDateRange(expenses, start, end);
+export function getCategorySummary(expenses: Expense[], startDate: Date, endDate: Date): PeriodSummary {
+    const filtered = filterExpensesByDateRange(expenses, startOfDay(startDate), endOfDay(endDate));
 
     if (filtered.length === 0) {
         return { total: 0, categories: [] };

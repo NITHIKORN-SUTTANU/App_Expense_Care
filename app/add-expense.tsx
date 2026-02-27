@@ -18,6 +18,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { CustomDatePicker } from '../src/components/CustomDatePicker';
 import { CATEGORIES } from '../src/constants/categories';
 import { borderRadius, fontSize, fontWeight, gradients, shadows, spacing } from '../src/constants/colors';
 import { MAX_NOTE_LENGTH } from '../src/constants/config';
@@ -32,6 +33,8 @@ export default function AddExpenseScreen() {
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState<CategoryKey>('food');
     const [note, setNote] = useState('');
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // ─── Submit handler ──────────────────────────────────────────────────────
@@ -48,7 +51,7 @@ export default function AddExpenseScreen() {
                 amount: numericAmount,
                 category,
                 note: note.trim(),
-                date: new Date(),
+                date: selectedDate,
             });
             router.back();
         } catch (error: any) {
@@ -56,7 +59,7 @@ export default function AddExpenseScreen() {
         } finally {
             setIsSubmitting(false);
         }
-    }, [amount, category, note, addExpense, router]);
+    }, [amount, category, note, selectedDate, addExpense, router]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -151,6 +154,28 @@ export default function AddExpenseScreen() {
                     </View>
                 </View>
 
+                {/* Date Selector */}
+                <View style={styles.section}>
+                    <Text style={styles.label}>Date</Text>
+                    <TouchableOpacity
+                        style={styles.dateSelector}
+                        onPress={() => setShowDatePicker(true)}
+                        disabled={isSubmitting}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="calendar-outline" size={20} color="#94A3B8" />
+                        <Text style={styles.dateText}>
+                            {selectedDate.toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                            })}
+                        </Text>
+                        <Ionicons name="chevron-forward" size={16} color="#64748B" />
+                    </TouchableOpacity>
+                </View>
+
                 {/* Note */}
                 <View style={styles.section}>
                     <Text style={styles.label}>
@@ -191,6 +216,17 @@ export default function AddExpenseScreen() {
                     </LinearGradient>
                 </TouchableOpacity>
             </ScrollView>
+
+            {/* Date Picker Modal */}
+            <CustomDatePicker
+                visible={showDatePicker}
+                onClose={() => setShowDatePicker(false)}
+                onSelect={(date) => {
+                    setSelectedDate(date);
+                    setShowDatePicker(false);
+                }}
+                selectedDate={selectedDate}
+            />
         </SafeAreaView>
     );
 }
@@ -257,6 +293,23 @@ const styles = StyleSheet.create({
     },
     categoryLabel: {
         fontSize: fontSize.xs,
+    },
+    dateSelector: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+        borderWidth: 1,
+        borderRadius: borderRadius.lg,
+        paddingHorizontal: spacing.lg,
+        paddingVertical: spacing.md,
+        backgroundColor: 'rgba(255, 255, 255, 0.06)',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+    },
+    dateText: {
+        flex: 1,
+        fontSize: fontSize.md,
+        color: '#FFF',
+        fontWeight: fontWeight.medium,
     },
     noteInput: {
         borderWidth: 1,

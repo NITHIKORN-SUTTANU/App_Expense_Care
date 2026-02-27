@@ -4,12 +4,15 @@ import { FlatList, Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } 
 import { Calendar, DateData } from 'react-native-calendars';
 import { borderRadius, fontSize, fontWeight, shadows, spacing } from '../constants/colors';
 import { useThemeColors } from '../hooks/useThemeColors';
+import { startOfWeek } from '../utils/dateHelpers';
 
 interface CustomDatePickerProps {
     visible: boolean;
     onClose: () => void;
     onSelect: (date: Date) => void;
     selectedDate: Date | null;
+    /** When true, highlights the entire week (Mon–Sun) around the selected date */
+    highlightWeek?: boolean;
 }
 
 export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
@@ -17,6 +20,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     onClose,
     onSelect,
     selectedDate,
+    highlightWeek = false,
 }) => {
     const colors = useThemeColors();
 
@@ -40,15 +44,39 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
         return `${year}-${month}-${day}`;
     };
 
-    const markedDates = tempSelectedDate
-        ? {
-            [formatDateLocal(tempSelectedDate)]: {
-                selected: true,
-                selectedColor: colors.primary,
-                disableTouchEvent: true,
-            },
+    const markedDates = React.useMemo(() => {
+        if (!tempSelectedDate) return {};
+
+        const selectedKey = formatDateLocal(tempSelectedDate);
+
+        if (!highlightWeek) {
+            return {
+                [selectedKey]: {
+                    selected: true,
+                    selectedColor: colors.primary,
+                },
+            };
         }
-        : {};
+
+        // Highlight entire week with individual circles
+        const weekStart = startOfWeek(tempSelectedDate);
+        const marks: Record<string, any> = {};
+
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(weekStart);
+            d.setDate(d.getDate() + i);
+            const key = formatDateLocal(d);
+            const isSelected = key === selectedKey;
+
+            marks[key] = {
+                selected: true,
+                selectedColor: isSelected ? colors.primary : 'rgba(52, 211, 153, 0.15)',
+                selectedTextColor: isSelected ? '#FFF' : '#94A3B8',
+            };
+        }
+
+        return marks;
+    }, [tempSelectedDate, highlightWeek, colors.primary]);
 
     const handleDayPress = (day: DateData) => {
         // Create date from timestamp to avoid timezone issues

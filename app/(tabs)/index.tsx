@@ -27,8 +27,10 @@ import { BudgetProgressBar } from '../../src/components/BudgetProgressBar';
 
 import { EmptyState } from '../../src/components/EmptyState';
 import { ExpenseCard } from '../../src/components/ExpenseCard';
+import { StreakCard } from '../../src/components/StreakCard';
 import { SwipeableRow } from '../../src/components/SwipeableRow';
 import { SyncIndicator } from '../../src/components/SyncIndicator';
+import { TrendForecastCard } from '../../src/components/TrendForecastCard';
 import { WarningBanner } from '../../src/components/WarningBanner';
 import {
   borderRadius,
@@ -45,7 +47,9 @@ import { useBudgetContext } from '../../src/context/BudgetContext';
 import { useThemeColors } from '../../src/hooks/useThemeColors';
 import { BudgetHealthStatus } from '../../src/types';
 import { getPeriodLabel } from '../../src/utils/dateHelpers';
+import { calculateMonthlyForecast } from '../../src/utils/forecastCalculations';
 import { formatCurrency } from '../../src/utils/formatCurrency';
+import { calculateBudgetStreak } from '../../src/utils/streakCalculations';
 
 export default function HomeScreen() {
   const colors = useThemeColors();
@@ -59,6 +63,28 @@ export default function HomeScreen() {
   const recentExpenses = useMemo(
     () => expenses.slice(0, HOME_RECENT_EXPENSES_COUNT),
     [expenses]
+  );
+
+  const streak = useMemo(
+    () => budget ? calculateBudgetStreak(expenses, budget.dailyLimit, budget.startDate) : null,
+    [expenses, budget]
+  );
+
+  const monthlyLimitComputed = useMemo(() => {
+    if (!budget) return 0;
+    // For now we assume the month budget is dailyLimit * 30.
+    // In a fuller app context, you might query the exact number of days in this month
+    // or let the user define a true monthly limit.
+    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+    return budget.dailyLimit * daysInMonth;
+  }, [budget]);
+
+  const forecast = useMemo(
+    () => {
+      if (!budget || monthlyLimitComputed <= 0) return null;
+      return calculateMonthlyForecast(expenses, monthlyLimitComputed);
+    },
+    [expenses, budget, monthlyLimitComputed]
   );
 
   const handleOpenSheet = useCallback(() => router.push('/add-expense'), [router]);
@@ -192,6 +218,17 @@ export default function HomeScreen() {
           </LinearGradient>
         </Animated.View>
 
+        {/* Forecast Card */}
+        {forecast && (
+          <Animated.View entering={FadeInDown.delay(250).duration(500)}>
+            <TrendForecastCard
+              forecast={forecast}
+              monthlyLimit={monthlyLimitComputed}
+              currency={currency}
+            />
+          </Animated.View>
+        )}
+
         {/* Warning */}
         {daily.status !== 'safe' && (
           <Animated.View
@@ -208,6 +245,13 @@ export default function HomeScreen() {
                   : `You've used ${Math.round(daily.percentUsed)}% of your daily budget`
               }
             />
+          </Animated.View>
+        )}
+
+        {/* Streak Card */}
+        {streak && (
+          <Animated.View entering={FadeInDown.delay(320).duration(500)}>
+            <StreakCard streak={streak} />
           </Animated.View>
         )}
 
