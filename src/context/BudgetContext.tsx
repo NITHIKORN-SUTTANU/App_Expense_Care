@@ -15,7 +15,6 @@ import * as budgetService from '../services/budgetService';
 import * as expenseService from '../services/expenseService';
 import { AllBudgetStatuses, Budget, CreateBudgetInput, CreateExpenseInput, Expense } from '../types';
 import { getAllBudgetStatuses } from '../utils/budgetCalculations';
-import { endOfMonth, startOfMonth } from '../utils/dateHelpers';
 import { useAuth } from './AuthContext';
 
 // ─── State Types ─────────────────────────────────────────────────────────────
@@ -104,18 +103,25 @@ export function BudgetProvider({ children }: BudgetProviderProps) {
         return unsubscribe;
     }, [user?.uid, refreshKey]);
 
-    // Subscribe to expenses for the current month
+    // Subscribe to expenses for a broad 1-year window
+    // This allows the Summary and Expenses tabs' custom date pickers to search historical data.
     useEffect(() => {
         if (!user) return;
 
         const uid = user.uid;
-        const monthStart = startOfMonth();
-        const monthEnd = endOfMonth();
+        // Fetch from 1 year ago to 1 year in the future to support historical queries
+        const startDate = new Date();
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        startDate.setHours(0, 0, 0, 0);
+
+        const endDate = new Date();
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        endDate.setHours(23, 59, 59, 999);
 
         const unsubscribe = expenseService.onExpensesSnapshot(
             uid,
-            monthStart,
-            monthEnd,
+            startDate,
+            endDate,
             (expenses) => {
                 dispatch({ type: 'SET_EXPENSES', expenses });
             }

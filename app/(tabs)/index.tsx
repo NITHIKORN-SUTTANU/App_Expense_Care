@@ -30,7 +30,6 @@ import { ExpenseCard } from '../../src/components/ExpenseCard';
 import { StreakCard } from '../../src/components/StreakCard';
 import { SwipeableRow } from '../../src/components/SwipeableRow';
 import { SyncIndicator } from '../../src/components/SyncIndicator';
-import { TrendForecastCard } from '../../src/components/TrendForecastCard';
 import { WarningBanner } from '../../src/components/WarningBanner';
 import {
   borderRadius,
@@ -47,7 +46,6 @@ import { useBudgetContext } from '../../src/context/BudgetContext';
 import { useThemeColors } from '../../src/hooks/useThemeColors';
 import { BudgetHealthStatus } from '../../src/types';
 import { getPeriodLabel } from '../../src/utils/dateHelpers';
-import { calculateMonthlyForecast } from '../../src/utils/forecastCalculations';
 import { formatCurrency } from '../../src/utils/formatCurrency';
 import { calculateBudgetStreak } from '../../src/utils/streakCalculations';
 
@@ -70,22 +68,6 @@ export default function HomeScreen() {
     [expenses, budget]
   );
 
-  const monthlyLimitComputed = useMemo(() => {
-    if (!budget) return 0;
-    // For now we assume the month budget is dailyLimit * 30.
-    // In a fuller app context, you might query the exact number of days in this month
-    // or let the user define a true monthly limit.
-    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-    return budget.dailyLimit * daysInMonth;
-  }, [budget]);
-
-  const forecast = useMemo(
-    () => {
-      if (!budget || monthlyLimitComputed <= 0) return null;
-      return calculateMonthlyForecast(expenses, monthlyLimitComputed);
-    },
-    [expenses, budget, monthlyLimitComputed]
-  );
 
   const handleOpenSheet = useCallback(() => router.push('/add-expense'), [router]);
   const handleSetupBudget = useCallback(() => router.push('/budget-setup'), [router]);
@@ -218,16 +200,7 @@ export default function HomeScreen() {
           </LinearGradient>
         </Animated.View>
 
-        {/* Forecast Card */}
-        {forecast && (
-          <Animated.View entering={FadeInDown.delay(250).duration(500)}>
-            <TrendForecastCard
-              forecast={forecast}
-              monthlyLimit={monthlyLimitComputed}
-              currency={currency}
-            />
-          </Animated.View>
-        )}
+
 
         {/* Warning */}
         {daily.status !== 'safe' && (
@@ -248,15 +221,8 @@ export default function HomeScreen() {
           </Animated.View>
         )}
 
-        {/* Streak Card */}
-        {streak && (
-          <Animated.View entering={FadeInDown.delay(320).duration(500)}>
-            <StreakCard streak={streak} />
-          </Animated.View>
-        )}
-
         {/* Period Cards */}
-        <Animated.View entering={FadeInDown.delay(350).duration(500)} style={styles.periodRow}>
+        <Animated.View entering={FadeInDown.delay(300).duration(500)} style={styles.periodRow}>
           {/* Weekly card */}
           {weekly && (
             <View style={[styles.periodCard, styles.glassCard, shadows.sm]}>
@@ -270,6 +236,18 @@ export default function HomeScreen() {
                   ? `${formatCurrency(weekly.remaining, currency)} left`
                   : `${formatCurrency(Math.abs(weekly.remaining), currency)} over`}
               </Text>
+              {/* Usage Bar */}
+              <View style={styles.usageBarBg}>
+                <View
+                  style={[
+                    styles.usageBarFill,
+                    {
+                      width: `${Math.min(weekly.percentUsed, 100)}%`,
+                      backgroundColor: getStatusColor(weekly.status),
+                    },
+                  ]}
+                />
+              </View>
             </View>
           )}
 
@@ -286,9 +264,28 @@ export default function HomeScreen() {
                   ? `${formatCurrency(monthly.remaining, currency)} left`
                   : `${formatCurrency(Math.abs(monthly.remaining), currency)} over`}
               </Text>
+              {/* Usage Bar */}
+              <View style={styles.usageBarBg}>
+                <View
+                  style={[
+                    styles.usageBarFill,
+                    {
+                      width: `${Math.min(monthly.percentUsed, 100)}%`,
+                      backgroundColor: getStatusColor(monthly.status),
+                    },
+                  ]}
+                />
+              </View>
             </View>
           )}
         </Animated.View>
+
+        {/* Streak Card */}
+        {streak && (
+          <Animated.View entering={FadeInDown.delay(350).duration(500)}>
+            <StreakCard streak={streak} />
+          </Animated.View>
+        )}
 
         {/* Recent Expenses */}
         <Animated.View entering={FadeInDown.delay(450).duration(500)}>
@@ -463,6 +460,17 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
     marginTop: spacing.xs,
+  },
+  usageBarBg: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginTop: spacing.md,
+    overflow: 'hidden',
+  },
+  usageBarFill: {
+    height: '100%',
+    borderRadius: 2,
   },
 
   // ─── Expenses ─────────────────────────────────────────
