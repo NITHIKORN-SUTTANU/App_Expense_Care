@@ -79,16 +79,17 @@ const styles = StyleSheet.create({
     topRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.md,
+        // gap removed for RN compatibility; use child margins
         marginBottom: spacing.sm,
     },
     fireEmoji: {
         fontSize: 32,
+        marginRight: spacing.md,
     },
     countContainer: {
         flexDirection: 'row',
         alignItems: 'baseline',
-        gap: spacing.xs,
+        // gap removed; use child margins
     },
     streakCount: {
         fontSize: fontSize.xxxl,
@@ -103,6 +104,7 @@ const styles = StyleSheet.create({
         fontSize: fontSize.lg,
         fontWeight: fontWeight.semibold,
         color: '#94A3B8',
+        marginLeft: spacing.xs,
     },
     message: {
         fontSize: fontSize.sm,
@@ -113,12 +115,13 @@ const styles = StyleSheet.create({
     todayRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.xs,
+        // gap removed; use child margins
     },
     todayDot: {
         width: 8,
         height: 8,
         borderRadius: 4,
+        marginRight: spacing.xs,
     },
     todayText: {
         fontSize: fontSize.xs,

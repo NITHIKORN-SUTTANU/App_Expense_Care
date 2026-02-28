@@ -8,6 +8,8 @@
 /**
  * Format date in local time to YYYY-MM-DD
  */
+import { Timestamp } from 'firebase/firestore';
+
 export function formatDateLocal(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -126,6 +128,29 @@ export function formatTime(date: Date): string {
         minute: '2-digit',
         hour12: true,
     });
+}
+
+/**
+ * Convert a JS Date to a Firestore Timestamp.
+ */
+export function toFirestoreTimestamp(date: Date): Timestamp {
+    return Timestamp.fromDate(date);
+}
+
+/**
+ * Convert various Firestore timestamp-like values to a JS Date.
+ * Accepts `Timestamp`, a plain object with `seconds`, or a `Date`.
+ * Falls back to `new Date()` when the value is falsy.
+ */
+export function fromFirestoreTimestamp(value: any): Date {
+    if (!value) return new Date();
+    if (value instanceof Timestamp) return value.toDate();
+    if (value instanceof Date) return value;
+    if (typeof value === 'object' && typeof value.seconds === 'number') {
+        return new Date(value.seconds * 1000);
+    }
+    // Last resort: try constructing a Date
+    return new Date(value);
 }
 
 /**

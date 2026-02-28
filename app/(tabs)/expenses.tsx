@@ -47,16 +47,15 @@ export default function ExpensesScreen() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<CategoryKey | 'all'>('all');
     const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-
     const filteredExpenses = useMemo(() => {
-        let result = expenses;
+        let result = expenses.slice();
 
-        // Filter by Date Range (if selected)
+        // Filter by DateRange
         if (dateRange) {
             const rangeStart = startOfDay(dateRange.start).getTime();
             const rangeEnd = endOfDay(dateRange.end).getTime();
 
-            result = result.filter(expense => {
+            result = result.filter((expense) => {
                 const expenseTime = expense.date.getTime();
                 return expenseTime >= rangeStart && expenseTime <= rangeEnd;
             });
@@ -64,7 +63,7 @@ export default function ExpensesScreen() {
 
         // Filter by Category
         if (selectedCategory !== 'all') {
-            result = result.filter(expense => expense.category === selectedCategory);
+            result = result.filter((expense) => expense.category === selectedCategory);
         }
 
         // Sort by Date Descending (Newest first)
@@ -187,7 +186,7 @@ export default function ExpensesScreen() {
                     <View>
                         <Text style={[styles.pageTitle, { color: '#FFF', marginBottom: spacing.md }]}>Expenses</Text>
 
-                        <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm, flexWrap: 'wrap' }}>
+                        <View style={{ flexDirection: 'row', marginBottom: spacing.sm, flexWrap: 'wrap' }}>
                             {/* Category Filter Button */}
                             <TouchableOpacity
                                 onPress={() => setShowCategoryPicker(true)}
@@ -199,8 +198,9 @@ export default function ExpensesScreen() {
                                             : 'rgba(52, 211, 153, 0.2)',
                                     },
                                 ]}
-                            >
-                                <Ionicons name="filter" size={16} color="#FFF" />
+                                // add spacing between filter buttons
+                                activeOpacity={0.9}>
+                                <Ionicons name="filter" size={16} color="#FFF" style={styles.filterIcon} />
                                 <Text style={[styles.filterButtonText, { color: '#FFF' }]}>
                                     {selectedCategory === 'all' ? 'All' : getCategoryByKey(selectedCategory).label}
                                 </Text>
@@ -220,7 +220,7 @@ export default function ExpensesScreen() {
                             {/* Date Filter Button */}
                             <TouchableOpacity
                                 onPress={() => setShowDatePicker(true)}
-                                style={[styles.filterButton, { backgroundColor: dateRange ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255, 255, 255, 0.1)' }]}
+                                style={[styles.filterButton, { backgroundColor: dateRange ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255, 255, 255, 0.1)', marginLeft: spacing.sm }]}
                             >
                                 <Ionicons name="calendar" size={16} color="#FFF" />
                                 <Text style={[styles.filterButtonText, { color: '#FFF' }]}>
@@ -389,7 +389,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
         borderRadius: borderRadius.full,
-        gap: spacing.xs,
+        // gap removed; use icon/text margins
+    },
+    filterIcon: {
+        marginRight: spacing.xs,
     },
     filterButtonText: {
         fontSize: fontSize.sm,
@@ -408,11 +411,14 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.md,
         paddingHorizontal: spacing.md,
         borderRadius: borderRadius.lg,
-        gap: spacing.md,
+        // gap removed; use icon/text margins
     },
     categoryOptionText: {
         flex: 1,
         fontSize: fontSize.md,
         fontWeight: fontWeight.medium,
+    },
+    categoryOptionIcon: {
+        marginRight: spacing.md,
     },
 });

@@ -354,13 +354,15 @@ const styles = StyleSheet.create({
     currencyRow: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: spacing.sm,
+        // gap removed; apply margins on chips
     },
     currencyChip: {
         paddingHorizontal: spacing.lg,
         paddingVertical: spacing.sm,
         borderRadius: borderRadius.full,
         borderWidth: 1,
+        marginRight: spacing.sm / 2,
+        marginBottom: spacing.sm,
     },
     currencyText: {
         fontSize: fontSize.sm,

@@ -17,7 +17,6 @@ import {
     orderBy,
     query,
     serverTimestamp,
-    Timestamp,
     updateDoc,
     where,
     type QueryDocumentSnapshot,
@@ -25,7 +24,7 @@ import {
 import { CATEGORIES } from '../constants/categories';
 import { MAX_NOTE_LENGTH } from '../constants/config';
 import { CategoryKey, CreateExpenseInput, Expense } from '../types';
-import { endOfDay, endOfMonth, endOfWeek, startOfDay, startOfMonth, startOfWeek } from '../utils/dateHelpers';
+import { endOfDay, endOfMonth, endOfWeek, fromFirestoreTimestamp, startOfDay, startOfMonth, startOfWeek, toFirestoreTimestamp } from '../utils/dateHelpers';
 import { db } from './firebase';
 
 // ─── Collection Reference Helper ─────────────────────────────────────────────
@@ -54,7 +53,7 @@ export async function addExpense(uid: string, data: CreateExpenseInput): Promise
         amount: data.amount,
         category: data.category,
         note: data.note?.trim() ?? '',
-        date: Timestamp.fromDate(data.date),
+        date: toFirestoreTimestamp(data.date),
         createdAt: serverTimestamp(),
     });
 
@@ -78,7 +77,7 @@ export async function updateExpense(
 ): Promise<void> {
     const updates: any = { ...data };
     if (updates.date) {
-        updates.date = Timestamp.fromDate(updates.date);
+        updates.date = toFirestoreTimestamp(updates.date);
     }
     // Remove undefined values
     Object.keys(updates).forEach((key) => updates[key] === undefined && delete updates[key]);
@@ -96,8 +95,8 @@ export async function getExpensesByDateRange(
 ): Promise<Expense[]> {
     const q = query(
         expensesRef(uid),
-        where('date', '>=', Timestamp.fromDate(start)),
-        where('date', '<=', Timestamp.fromDate(end)),
+        where('date', '>=', toFirestoreTimestamp(start)),
+        where('date', '<=', toFirestoreTimestamp(end)),
         orderBy('date', 'desc')
     );
     const snapshot = await getDocs(q);
@@ -138,8 +137,8 @@ export function onExpensesSnapshot(
 ): () => void {
     const q = query(
         expensesRef(uid),
-        where('date', '>=', Timestamp.fromDate(start)),
-        where('date', '<=', Timestamp.fromDate(end)),
+        where('date', '>=', toFirestoreTimestamp(start)),
+        where('date', '<=', toFirestoreTimestamp(end)),
         orderBy('date', 'desc')
     );
 
@@ -168,8 +167,8 @@ function mapSnapshotToExpense(docSnap: QueryDocumentSnapshot): Expense {
         amount: data.amount,
         category: data.category as CategoryKey,
         note: data.note ?? '',
-        date: data.date?.toDate() ?? new Date(),
-        createdAt: data.createdAt?.toDate() ?? new Date(),
+        date: fromFirestoreTimestamp(data.date),
+        createdAt: fromFirestoreTimestamp(data.createdAt),
     };
 }
 

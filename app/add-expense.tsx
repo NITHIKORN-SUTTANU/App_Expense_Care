@@ -135,6 +135,7 @@ export default function AddExpenseScreen() {
                                         name={cat.icon as any}
                                         size={18}
                                         color={isSelected ? cat.color : '#94A3B8'}
+                                        style={styles.catIcon}
                                     />
                                     <Text
                                         style={[
@@ -280,16 +281,20 @@ const styles = StyleSheet.create({
     categoryGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: spacing.sm,
+        // gap removed; apply margins on chips
     },
     categoryChip: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.xs,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
         borderRadius: borderRadius.lg,
         justifyContent: 'center',
+        marginBottom: spacing.sm,
+        marginRight: spacing.sm / 2,
+    },
+    catIcon: {
+        marginRight: spacing.xs,
     },
     categoryLabel: {
         fontSize: fontSize.xs,
@@ -297,7 +302,7 @@ const styles = StyleSheet.create({
     dateSelector: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.sm,
+        // gap removed; use child margins
         borderWidth: 1,
         borderRadius: borderRadius.lg,
         paddingHorizontal: spacing.lg,

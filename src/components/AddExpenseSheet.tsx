@@ -167,6 +167,7 @@ export function AddExpenseSheet({ isOpen, onClose }: AddExpenseSheetProps) {
                                         name={cat.icon as any}
                                         size={18}
                                         color={isSelected ? cat.color : '#94A3B8'}
+                                        style={styles.catIcon}
                                     />
                                     <Text
                                         style={[
@@ -267,16 +268,20 @@ const styles = StyleSheet.create({
     categoryGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: spacing.sm,
+        // gap removed; apply margins on chips
     },
     categoryChip: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.xs,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
+        marginBottom: spacing.sm,
+        marginRight: spacing.sm / 2,
         borderRadius: borderRadius.lg,
         justifyContent: 'center',
+    },
+    catIcon: {
+        marginRight: spacing.xs,
     },
     categoryLabel: {
         fontSize: fontSize.xs,

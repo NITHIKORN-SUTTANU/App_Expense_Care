@@ -4,6 +4,7 @@ import { FlatList, Modal, Pressable, StyleSheet, Switch, Text, TouchableOpacity,
 import { Calendar, DateData } from 'react-native-calendars';
 import { borderRadius, fontSize, fontWeight, shadows, spacing } from '../constants/colors';
 import { useThemeColors } from '../hooks/useThemeColors';
+import { hexWithAlpha } from '../utils/colorUtils';
 import { formatDateLocal } from '../utils/dateHelpers';
 
 export interface DateRange {
@@ -130,7 +131,7 @@ export const CustomDateRangePicker: React.FC<CustomDateRangePickerProps> = ({
             while (curr.getTime() < endDate.getTime()) {
                 const currStr = formatDateLocal(curr);
                 marks[currStr] = {
-                    color: colors.primary + '40', // 25% opacity
+                    color: hexWithAlpha(colors.primary, '40'), // 25% opacity
                     textColor: '#FFF',
                 };
                 curr.setDate(curr.getDate() + 1);
@@ -208,6 +209,7 @@ export const CustomDateRangePicker: React.FC<CustomDateRangePickerProps> = ({
                                 name={isYearPickerVisible ? 'chevron-up' : 'chevron-down'}
                                 size={20}
                                 color="#94A3B8"
+                                style={{ marginLeft: spacing.xs }}
                             />
                         </TouchableOpacity>
 
@@ -229,7 +231,7 @@ export const CustomDateRangePicker: React.FC<CustomDateRangePickerProps> = ({
                                         setEndDate(startDate);
                                     }
                                 }}
-                                trackColor={{ false: 'rgba(255, 255, 255, 0.2)', true: colors.primary + '80' }}
+                                trackColor={{ false: 'rgba(255, 255, 255, 0.2)', true: hexWithAlpha(colors.primary, '80') }}
                                 thumbColor={isRangeMode ? colors.primary : '#f4f3f4'}
                             />
                         </View>
@@ -316,6 +318,7 @@ export const CustomDateRangePicker: React.FC<CustomDateRangePickerProps> = ({
                                 style={[
                                     styles.footerButton,
                                     { backgroundColor: colors.primary },
+                                    { marginLeft: spacing.md },
                                     isRangeMode && !endDate && { opacity: 0.5 } // Disabled if waiting for end date
                                 ]}
                                 disabled={isRangeMode && !endDate}
@@ -362,7 +365,6 @@ const styles = StyleSheet.create({
     yearButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.xs,
         padding: spacing.xs,
     },
     closeButton: {
@@ -414,7 +416,6 @@ const styles = StyleSheet.create({
         paddingTop: spacing.md,
         borderTopWidth: 1,
         borderTopColor: 'rgba(255, 255, 255, 0.1)',
-        gap: spacing.md,
     },
     footerButton: {
         flex: 1,

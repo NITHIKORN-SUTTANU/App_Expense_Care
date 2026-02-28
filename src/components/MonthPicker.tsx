@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     yearButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.xs,
+        // gap removed; use child margins
         padding: spacing.xs,
     },
     yearListContainer: {
@@ -247,7 +247,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         paddingHorizontal: spacing.sm,
-        gap: spacing.sm,
         justifyContent: 'center',
     },
     monthCell: {
@@ -256,6 +255,7 @@ const styles = StyleSheet.create({
         borderRadius: borderRadius.lg,
         alignItems: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.06)',
+        margin: spacing.xs,
     },
     monthCellCurrent: {
         borderWidth: 1.5,

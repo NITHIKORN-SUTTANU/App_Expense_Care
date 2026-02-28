@@ -15,14 +15,14 @@ import {
     onSnapshot,
     orderBy,
     query,
-    Timestamp,
+    runTransaction,
     updateDoc,
     where,
-    writeBatch,
-    type QueryDocumentSnapshot
+    type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { MAX_BUDGET_LIMIT, MIN_BUDGET_LIMIT } from '../constants/config';
 import { Budget, CreateBudgetInput } from '../types';
+import { fromFirestoreTimestamp, toFirestoreTimestamp } from '../utils/dateHelpers';
 import { db } from './firebase';
 
 // ─── Collection Reference Helper ─────────────────────────────────────────────
@@ -43,32 +43,36 @@ function budgetsRef(uid: string) {
 export async function createBudget(uid: string, data: CreateBudgetInput): Promise<string> {
     validateBudgetInput(data);
 
-    const batch = writeBatch(db);
     const colRef = budgetsRef(uid);
 
-    // Deactivate currently active budgets
-    const activeQuery = query(colRef, where('isActive', '==', true));
-    const activeSnapshots = await getDocs(activeQuery);
+    // Normalize currency code
+    const currency = data.currency ? data.currency.toUpperCase() : data.currency;
 
-    activeSnapshots.docs.forEach((docSnap) => {
-        batch.update(docSnap.ref, { isActive: false });
+    // Use a transaction to deactivate existing active budgets and create the new one atomically.
+    const newId = await runTransaction(db, async (tx) => {
+        const activeQuery = query(colRef, where('isActive', '==', true));
+        const activeSnapshots = await getDocs(activeQuery);
+
+        activeSnapshots.docs.forEach((docSnap) => {
+            tx.update(docSnap.ref, { isActive: false });
+        });
+
+        const newBudgetRef = doc(colRef);
+        tx.set(newBudgetRef, {
+            userId: uid,
+            dailyLimit: data.dailyLimit,
+            weeklyLimit: data.weeklyLimit ?? null,
+            monthlyLimit: data.monthlyLimit ?? null,
+            currency,
+            startDate: toFirestoreTimestamp(data.startDate),
+            endDate: toFirestoreTimestamp(data.endDate),
+            isActive: true,
+        });
+
+        return newBudgetRef.id;
     });
 
-    // Create the new budget
-    const newBudgetRef = doc(colRef);
-    batch.set(newBudgetRef, {
-        userId: uid,
-        dailyLimit: data.dailyLimit,
-        weeklyLimit: data.weeklyLimit ?? null,
-        monthlyLimit: data.monthlyLimit ?? null,
-        currency: data.currency,
-        startDate: Timestamp.fromDate(data.startDate),
-        endDate: Timestamp.fromDate(data.endDate),
-        isActive: true,
-    });
-
-    await batch.commit();
-    return newBudgetRef.id;
+    return newId;
 }
 
 /**
@@ -107,10 +111,10 @@ export async function updateBudget(
     if (data.monthlyLimit !== undefined) updateFields.monthlyLimit = data.monthlyLimit;
     if (data.currency !== undefined) updateFields.currency = data.currency;
     if (data.startDate !== undefined) {
-        updateFields.startDate = Timestamp.fromDate(data.startDate);
+        updateFields.startDate = toFirestoreTimestamp(data.startDate);
     }
     if (data.endDate !== undefined) {
-        updateFields.endDate = Timestamp.fromDate(data.endDate);
+        updateFields.endDate = toFirestoreTimestamp(data.endDate);
     }
 
     await updateDoc(doc(db, 'users', uid, 'budgets', budgetId), updateFields);
@@ -171,8 +175,8 @@ function mapSnapshotToBudget(docSnap: QueryDocumentSnapshot): Budget {
         weeklyLimit: data.weeklyLimit ?? null,
         monthlyLimit: data.monthlyLimit ?? null,
         currency: data.currency,
-        startDate: data.startDate?.toDate() ?? new Date(),
-        endDate: data.endDate?.toDate() ?? new Date(),
+        startDate: fromFirestoreTimestamp(data.startDate),
+        endDate: fromFirestoreTimestamp(data.endDate),
         isActive: data.isActive ?? false,
     };
 }

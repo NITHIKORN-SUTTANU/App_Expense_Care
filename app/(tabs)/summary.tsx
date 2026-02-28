@@ -105,9 +105,9 @@ export default function SummaryScreen() {
                     activeOpacity={0.7}
                     style={styles.dateSelectorButton}
                 >
-                    <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+                    <Ionicons name="calendar-outline" size={20} color={colors.primary} style={styles.dateSelectorIcon} />
                     <Text style={styles.dateSelectorText}>{periodDateLabel}</Text>
-                    <Ionicons name="chevron-down" size={16} color="#94A3B8" />
+                    <Ionicons name="chevron-down" size={16} color="#94A3B8" style={styles.dateSelectorIcon} />
                 </TouchableOpacity>
 
                 {/* Unified Date Range Picker */}
@@ -266,7 +266,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
         borderRadius: borderRadius.lg,
         marginBottom: spacing.xl,
-        gap: spacing.sm,
+        marginHorizontal: spacing.sm,
+    },
+    dateSelectorIcon: {
+        marginHorizontal: spacing.sm,
     },
     dateSelectorText: {
         color: '#FFF',
@@ -286,13 +289,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
         paddingVertical: spacing.md,
         borderRadius: borderRadius.lg,
-        gap: spacing.xs,
+        marginBottom: spacing.xs,
     },
     legendItem: {
         flexDirection: 'row',
         alignItems: 'center',
         width: '48%',
-        gap: spacing.xs,
+        marginBottom: spacing.xs,
         paddingVertical: spacing.xs,
         flexShrink: 1,
     },
@@ -300,6 +303,7 @@ const styles = StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
+        marginRight: spacing.xs,
     },
     legendLabel: {
         fontSize: fontSize.xs,

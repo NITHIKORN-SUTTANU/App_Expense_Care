@@ -171,13 +171,14 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         justifyContent: 'space-between',
         height: '100%',
-        gap: spacing.xs,
+        // gap removed; apply horizontal margin on bar columns
     },
     barColumn: {
         flex: 1,
         alignItems: 'center',
         height: '100%',
         justifyContent: 'flex-end',
+        marginHorizontal: spacing.xs / 2,
     },
     barTrack: {
         width: '100%',

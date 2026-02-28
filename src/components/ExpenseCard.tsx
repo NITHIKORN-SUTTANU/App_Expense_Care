@@ -45,7 +45,9 @@ export function ExpenseCard({
             onLongPress={onLongPress}
             activeOpacity={0.7}
         >
-            <CategoryIcon category={expense.category} size={44} />
+            <View style={styles.iconWrapper}>
+                <CategoryIcon category={expense.category} size={44} />
+            </View>
 
             <View style={styles.info}>
                 <Text style={[styles.category, { color: colors.text }]} numberOfLines={1}>
@@ -76,26 +78,29 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: spacing.lg,
         paddingVertical: spacing.md,
-        gap: spacing.md,
+        // gap removed for RN compatibility; spacing applied to children
+    },
+    iconWrapper: {
+        marginRight: spacing.md,
     },
     info: {
         flex: 1,
-        gap: 2,
     },
     category: {
         fontSize: fontSize.md,
         fontWeight: fontWeight.medium,
+        marginBottom: 2,
     },
     note: {
         fontSize: fontSize.sm,
     },
     right: {
         alignItems: 'flex-end',
-        gap: 2,
     },
     amount: {
         fontSize: fontSize.md,
         fontWeight: fontWeight.semibold,
+        marginBottom: 2,
     },
     time: {
         fontSize: fontSize.xs,

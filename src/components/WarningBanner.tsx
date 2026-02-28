@@ -40,7 +40,7 @@ export function WarningBanner({ status, message }: WarningBannerProps) {
                 borderColor: isOver ? 'rgba(244, 63, 94, 0.2)' : 'rgba(245, 158, 11, 0.2)',
             }
         ]}>
-            <Ionicons name={icon} size={20} color={color} />
+            <Ionicons name={icon} size={20} color={color} style={styles.icon} />
             <Text style={[styles.text, { color: '#FFF' }]}>
                 {message ?? defaultMessage}
             </Text>
@@ -52,11 +52,14 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.md,
+        // gap removed for RN compatibility; use child margins instead
         paddingHorizontal: spacing.lg,
         paddingVertical: spacing.lg,
         borderRadius: borderRadius.lg,
         borderWidth: 1,
+    },
+    icon: {
+        marginRight: spacing.md,
     },
     text: {
         flex: 1,

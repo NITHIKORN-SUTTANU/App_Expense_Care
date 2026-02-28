@@ -134,10 +134,11 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
                                 {currentMonth.getFullYear()}
                             </Text>
                             <Ionicons
-                                name={isYearPickerVisible ? "chevron-up" : "chevron-down"}
-                                size={20}
-                                color="#94A3B8"
-                            />
+                                    name={isYearPickerVisible ? "chevron-up" : "chevron-down"}
+                                    size={20}
+                                    color="#94A3B8"
+                                    style={styles.yearIcon}
+                                />
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -231,7 +232,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={[styles.footerButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
+                                style={[styles.footerButton, { backgroundColor: colors.primary, borderColor: colors.primary, marginLeft: spacing.md }]}
                                 onPress={handleConfirm}
                             >
                                 <Text style={[styles.footerButtonText, { color: '#FFF' }]}>
@@ -276,8 +277,11 @@ const styles = StyleSheet.create({
     yearButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.xs,
+        // gap removed; use icon/text margins
         padding: spacing.xs,
+    },
+    yearIcon: {
+        marginLeft: spacing.xs,
     },
     yearListContainer: {
         height: 340, // Match Approx Calendar Height
@@ -303,7 +307,6 @@ const styles = StyleSheet.create({
         paddingTop: spacing.md,
         borderTopWidth: 1,
         borderTopColor: 'rgba(255, 255, 255, 0.1)',
-        gap: spacing.md
     },
     footerButton: {
         flex: 1,

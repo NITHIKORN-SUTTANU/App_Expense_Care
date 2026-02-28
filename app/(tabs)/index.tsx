@@ -14,12 +14,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,12 +32,12 @@ import { SwipeableRow } from '../../src/components/SwipeableRow';
 import { SyncIndicator } from '../../src/components/SyncIndicator';
 import { WarningBanner } from '../../src/components/WarningBanner';
 import {
-  borderRadius,
-  fontSize,
-  fontWeight,
-  gradients,
-  shadows,
-  spacing,
+    borderRadius,
+    fontSize,
+    fontWeight,
+    gradients,
+    shadows,
+    spacing,
 } from '../../src/constants/colors';
 import { APP_NAME, HOME_RECENT_EXPENSES_COUNT } from '../../src/constants/config';
 import { getLifeQuote } from '../../src/constants/quotes';
@@ -430,13 +430,13 @@ const styles = StyleSheet.create({
   // ─── Period Cards ─────────────────────────────────────
   periodRow: {
     flexDirection: 'row',
-    gap: spacing.md,
     marginBottom: spacing.xxl,
   },
   periodCard: {
     flex: 1,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
+    marginRight: spacing.md,
   },
   periodDot: {
     width: 8,
@@ -487,10 +487,10 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     padding: spacing.xxxl,
     alignItems: 'center',
-    gap: spacing.sm,
   },
   emptyText: {
     fontSize: fontSize.md,
+    marginTop: spacing.sm,
   },
   divider: {
     height: StyleSheet.hairlineWidth,

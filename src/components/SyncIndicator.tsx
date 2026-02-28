@@ -25,7 +25,7 @@ export function SyncIndicator() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.warning }]}>
-            <Ionicons name="cloud-offline" size={14} color={colors.textInverse} />
+            <Ionicons name="cloud-offline" size={14} color={colors.textInverse} style={styles.icon} />
             <Text style={[styles.text, { color: colors.textInverse }]}>Offline</Text>
         </View>
     );
@@ -35,10 +35,13 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.xs,
+        // gap removed for RN compatibility; use child margins instead
         paddingHorizontal: spacing.sm,
         paddingVertical: spacing.xs,
         borderRadius: borderRadius.full,
+    },
+    icon: {
+        marginRight: spacing.xs,
     },
     text: {
         fontSize: fontSize.xs,

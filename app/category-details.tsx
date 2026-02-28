@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     },
     listContent: {
         padding: spacing.xl,
-        gap: spacing.md,
+        // gap removed; use separators/padding for spacing between items
     },
     emptyContainer: {
         padding: spacing.xxl,
