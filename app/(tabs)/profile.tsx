@@ -99,7 +99,7 @@ export default function ProfileScreen() {
                                 Weekly
                             </Text>
                             <Text style={[styles.detailValue, { color: '#FFF' }]}>
-                                {formatCurrency(budget.weeklyLimit ?? budget.dailyLimit * 7, budget.currency)}
+                                {budget.weeklyLimit ? formatCurrency(budget.weeklyLimit, budget.currency) : 'Not set'}
                             </Text>
                         </View>
                         <View style={[styles.divider, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]} />
@@ -108,10 +108,7 @@ export default function ProfileScreen() {
                                 Monthly
                             </Text>
                             <Text style={[styles.detailValue, { color: '#FFF' }]}>
-                                {formatCurrency(
-                                    budget.monthlyLimit ?? budget.dailyLimit * new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate(),
-                                    budget.currency
-                                )}
+                                {budget.monthlyLimit ? formatCurrency(budget.monthlyLimit, budget.currency) : 'Not set'}
                             </Text>
                         </View>
                     </View>
