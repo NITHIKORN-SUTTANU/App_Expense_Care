@@ -18,6 +18,7 @@ import { borderRadius, fontSize, fontWeight, shadows, spacing } from '../src/con
 import { useBudgetContext } from '../src/context/BudgetContext';
 import { BudgetPeriod, CategoryKey, Expense } from '../src/types';
 import { filterExpensesByDateRange, getDateRangeForPeriod } from '../src/utils/budgetCalculations';
+import { endOfDay, startOfDay } from '../src/utils/dateHelpers';
 import { formatCurrency } from '../src/utils/formatCurrency';
 
 export default function CategoryDetailsScreen() {
@@ -35,8 +36,8 @@ export default function CategoryDetailsScreen() {
         let rangeEnd: Date;
 
         if (period === 'custom' && start && end) {
-            rangeStart = new Date(start);
-            rangeEnd = new Date(end);
+            rangeStart = startOfDay(new Date(start));
+            rangeEnd = endOfDay(new Date(end));
         } else {
             const range = getDateRangeForPeriod(period as BudgetPeriod);
             rangeStart = range.start;
