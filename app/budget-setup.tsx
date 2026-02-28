@@ -145,7 +145,7 @@ export default function BudgetSetupScreen() {
         >
             <ScrollView
                 style={styles.flex}
-                contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xl }]}
+                contentContainerStyle={[styles.content, { paddingTop: spacing.md }]}
                 keyboardShouldPersistTaps="handled"
             >
                 <Text style={[styles.pageTitle, { color: '#FFF' }]}>
